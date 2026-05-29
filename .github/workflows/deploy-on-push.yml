@@ -1,13 +1,15 @@
 name: deploy on push
 on: [push]
+
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
     steps:
-      - name: check out the code to build server
+      - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set target directory permissions
+      # 给服务器目录授权（避免权限问题）
+      - name: Set server permissions
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
@@ -19,14 +21,14 @@ jobs:
             sudo chown -R ubuntu:ubuntu /var/www/html
             sudo chmod -R 755 /var/www/html
 
-      - name: Copy files to server
+      # 上传所有文件到服务器
+      - name: Copy all files to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER_NAME }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-          # 关键修改：同时上传 index.html 和 Eloisa-photo.jpg
           source: |
             index.html
             Eloisa-photo.jpg
