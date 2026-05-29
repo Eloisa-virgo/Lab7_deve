@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main  # 只在 main 分支推送时，部署到开发服务器
+
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
@@ -29,7 +30,5 @@ jobs:
           username: ${{ secrets.SSH_USER_NAME }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-          source: |
-            index.html
-            Eloisa-photo.jpg
+          source: "*.html,*.jpg"  # 通配符匹配所有 .html 和 .jpg 文件
           target: "/var/www/html"
