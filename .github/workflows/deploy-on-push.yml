@@ -1,15 +1,16 @@
 name: deploy on push
-on: [push]
-
+on:
+  push:
+    branches:
+      - main  # 只在 main 分支推送时，部署到开发服务器
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
+      - name: check out the code to build server
         uses: actions/checkout@v4
 
-      # 用 SSH 命令直接上传文件，不用 SCP
-      - name: Deploy files via SSH
+      - name: Set target directory permissions
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
@@ -17,15 +18,18 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # 先授权
             sudo mkdir -p /var/www/html
             sudo chown -R ubuntu:ubuntu /var/www/html
             sudo chmod -R 755 /var/www/html
-            
-            # 直接从仓库拉取文件（这里用 raw.githubusercontent.com 的链接）
-            cd /var/www/html
-            curl -O https://raw.githubusercontent.com/Eloisa-virgo/Lab7_deve/main/index.html
-            curl -O https://raw.githubusercontent.com/Eloisa-virgo/Lab7_deve/main/Eloisa-photo.jpg
-            
-            # 重启 Nginx 让它生效
-            sudo systemctl restart nginx
+
+      - name: Copy files to dev server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER_NAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          source: |
+            index.html
+            Eloisa-photo.jpg
+          target: "/var/www/html"
