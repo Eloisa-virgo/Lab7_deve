@@ -8,12 +8,26 @@ jobs:
       - name: check out the code to build server
         uses: actions/checkout@v4
 
-      - name: copy file to server
+      - name: Set target directory permissions
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER_NAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            sudo mkdir -p /var/www/html
+            sudo chown -R ubuntu:ubuntu /var/www/html
+            sudo chmod -R 755 /var/www/html
+
+    
+      - name: Copy index.html to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER_NAME }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-          source: "./index.html"
+          # 这里用绝对路径，确保能找到文件
+          source: "index.html"
           target: "/var/www/html"
